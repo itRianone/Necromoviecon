@@ -4,7 +4,8 @@ db = sqlite3.connect("mydatabase.db")
 cursor = db.cursor()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS movies(
-    name TEXT
+    name TEXT,
+    type TEXT
   )
 """)
 
