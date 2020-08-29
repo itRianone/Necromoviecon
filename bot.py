@@ -1,11 +1,11 @@
 import logging
 import sqlite3
-from config import token
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher import FSMContext
 from my_db.sqliteTry import db, cursor
 from states import MyStates
+from config import token
 
 logging.basicConfig(level=logging.INFO)
 
@@ -57,7 +57,8 @@ async def add_movie_type(message: types.message, state: FSMContext):
 #remove from db func, FSM
 @dp.message_handler(commands=["remove"])
 async def delete_from_db(message: types.Message):
-    await bot.send_message(message.chat.id, "Отправь название произведения, и, если оно есть в бд, я его удалю")
+    await bot.send_message(
+        message.chat.id, "Отправь название произведения, и, если оно есть в бд, я его удалю")
         
     await MyStates.remove.set()
 
@@ -68,12 +69,14 @@ async def delete_from_db(message: types.Message, state: FSMContext):
 
     cursor.execute(f"SELECT name FROM movies WHERE name = '{arg.strip()}'")
 
-    if cursor.fetchone():
+    if arg.startswith("/"):
+        await state.finish()
+    elif cursor.fetchone():
         remo = (f"DELETE FROM movies WHERE name = '{arg.strip()}'")
         cursor.execute(remo)
         db.commit()
 
-        await bot.send_message(message.chat.id, f"'{arg.strip()}' удалено из бд yeye")
+        await bot.send_message(message.chat.id, f"'{arg.strip()}' удалено из бд")
     else:
         await bot.send_message(message.chat.id, "Не могу удалить того, чего нет в бд")
     await state.finish()
@@ -97,7 +100,8 @@ async def edit_from(message: types.Message, state: FSMContext):
 
         await MyStates.next()
     else:
-        await bot.send_message(message.chat.id, post_passed + "Не могу редачить то, чего нет в базе")
+        await bot.send_message(
+            message.chat.id, post_passed + "Не могу редачить то, чего нет в базе")
         await state.finish()
 
 #object which will be edit for
@@ -107,7 +111,8 @@ async def edit_from(message: types.Message, state: FSMContext):
 
     data = await state.get_data()   
     post_passed = data.get("answer1")
-    await bot.send_message(message.chat.id, f"Хорошо, {post_passed} был(а) отредактировано на {post_took}")
+    await bot.send_message(
+        message.chat.id, f"Хорошо, {post_passed} был(а) отредактировано на {post_took}")
 
     edit = f"""
         UPDATE movies 
@@ -126,7 +131,8 @@ async def db_work(message: types.Message):
     for m in cursor.execute("SELECT * FROM movies"):
         all_m.append(m)
 
-    await bot.send_message(message.chat.id,"Все произведения, которые ты хотел посмотреть:" + f"\n{all_m}")
+    await bot.send_message(
+        message.chat.id,"Все произведения, которые ты хотел посмотреть:" + f"\n{all_m}")
 
 #welcome func
 @dp.message_handler(commands=["start", "s", "ы"])
