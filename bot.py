@@ -1,5 +1,6 @@
 import logging
 import sqlite3
+import random
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher import FSMContext
@@ -29,6 +30,7 @@ async def add_movie_name(message: types.message, state: FSMContext):
 
     if m_name.startswith("/"):
         await state.finish()
+        await bot.send_message(message.chat.id, "Ты ввел знак вызова команды (/), работа FSM приостановлена")
     elif cursor.fetchone() is None:
         await state.update_data(answer1=m_name)
 
@@ -71,6 +73,7 @@ async def delete_from_db(message: types.Message, state: FSMContext):
 
     if arg.startswith("/"):
         await state.finish()
+        await bot.send_message(message.chat.id, "Ты ввел знак вызова команды (/), работа FSM приостановлена")
     elif cursor.fetchone():
         remo = (f"DELETE FROM movies WHERE name = '{arg.strip()}'")
         cursor.execute(remo)
@@ -100,8 +103,7 @@ async def edit_from(message: types.Message, state: FSMContext):
 
         await MyStates.next()
     else:
-        await bot.send_message(
-            message.chat.id, post_passed + "Не могу редачить то, чего нет в базе")
+        await bot.send_message(message.chat.id, "Не могу редачить то, чего нет в базе")
         await state.finish()
 
 #object which will be edit for
@@ -155,15 +157,45 @@ async def send_welcome(message: types.Message):
         "\nКоманда help, на которую ты кликнул - /help"
         "\nКоманды для добавления/удаления/изменения произведений из базы данных:"
         "\n/add, /remove, /edit"
-        "\nА еще можешь чекнуть всю базу - /all".format(message.from_user.first_name))
+        "\nРабота добавления использует FSM, если ты отправишь (/) во время вопросов, то FSM остановится"
+        "\nА еще можешь чекнуть всю базу - /all"
+        "\nИ сыграть в рулеточку) - /rullete, /рулетка".format(message.from_user.first_name))
 
 #for sticks 
 @dp.message_handler(content_types=types.ContentType.STICKER)
 async def stick_id(message: types.Message):
-    #await message.answer_sticker(r"{}".format(message.sticker.file_id))
     #Включай если надо узнать id стикера, фото и тд
     await message.reply("{}".format(message.sticker.file_id))
 
+#russian rullete(why not?)
+def rullete(random):
+    global god_change
+    god_change = random.randint(1, 2)
+    global other_var_life
+    other_var_life = random.randint(2, 3)
+    global other_var_death
+    other_var_death = random.randint(4, 5)
+
+# ↑
+@dp.message_handler(commands=["rullete","рулетка"])
+async def rus_rullete(message: types.Message):
+    #russian rullete(why not?)
+    rullete(random)
+
+    if god_change == 1:
+        await bot.send_message(message.chat.id, f"{message.from_user.first_name}, ты выжил, гц")
+        life = "CAACAgIAAxkBAAII5l9P67aFBqrmeND0V5ZHGidV3iT6AAJTAQACe04qEB9UH_TkgUMJGwQ"
+        if other_var_life == 2:
+            await message.answer_sticker(r"{}".format(life))
+        if other_var_life == 3:
+            await message.answer_sticker(r"{}".format(life))
+    if god_change == 2:
+        await bot.send_message(message.chat.id, f"{message.from_user.first_name}, ты не выжил, f")
+        death = "CAACAgIAAxkBAAIJB19P7QTk6-4usNsg5mLYIj8elJEbAAJjAQACe04qEFNWbvXKCmwLGwQ"
+        if other_var_death == 4:
+            await message.answer_sticker(r"{}".format(death))
+        if other_var_death == 5:
+            await message.answer_sticker(r"{}".format(death))
 #classic
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
