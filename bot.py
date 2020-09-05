@@ -26,7 +26,7 @@ async def add_to_db(message: types.Message):
 async def add_movie_name(message: types.message, state: FSMContext):
     m_name = message.text.upper()
     cursor.execute(
-        f"SELECT name FROM movies WHERE name = '{m_name.strip()}'")
+        "SELECT name FROM movies WHERE name = (?)", ([m_name.strip()]))
 
     if m_name.startswith("/"):
         await state.finish()
@@ -50,7 +50,7 @@ async def add_movie_type(message: types.message, state: FSMContext):
     
     m_type = message.text.upper()
 
-    cursor.execute(f"INSERT INTO movies VALUES (?, ?)", (m_name.strip(), m_type.strip()))
+    cursor.execute("INSERT INTO movies VALUES (?, ?)", (m_name.strip(), m_type.strip()))
     db.commit()    
     
     await bot.send_message(message.chat.id, f"{m_name, m_type} добавлено в бд")
@@ -69,14 +69,13 @@ async def delete_from_db(message: types.Message):
 async def delete_from_db(message: types.Message, state: FSMContext):
     arg = message.text.upper()
 
-    cursor.execute(f"SELECT name FROM movies WHERE name = '{arg.strip()}'")
+    cursor.execute("SELECT name FROM movies WHERE name = (?)", [(arg.strip())])
 
     if arg.startswith("/"):
         await state.finish()
         await bot.send_message(message.chat.id, "Ты ввел знак вызова команды (/), работа FSM приостановлена")
     elif cursor.fetchone():
-        remo = (f"DELETE FROM movies WHERE name = '{arg.strip()}'")
-        cursor.execute(remo)
+        cursor.execute("DELETE FROM movies WHERE name = (?)", [(arg.strip())])
         db.commit()
 
         await bot.send_message(message.chat.id, f"'{arg.strip()}' удалено из бд")
@@ -96,7 +95,7 @@ async def edit_in_db(message: types.Message):
 async def edit_from(message: types.Message, state: FSMContext):  
     post_passed = message.text.upper()
 
-    cursor.execute(f"SELECT name FROM movies WHERE name = '{post_passed.strip()}'")
+    cursor.execute("SELECT name FROM movies WHERE name = (?)", ([post_passed.strip()]))
     if cursor.fetchone():
         await state.update_data(answer1=post_passed)
         await bot.send_message(message.chat.id, post_passed + " будет редактировано на:")
@@ -116,13 +115,8 @@ async def edit_from(message: types.Message, state: FSMContext):
     await bot.send_message(
         message.chat.id, f"Хорошо, {post_passed} был(а) отредактировано на {post_took}")
 
-    edit = f"""
-        UPDATE movies 
-        SET name = '{post_took.strip()}' 
-        WHERE name = '{post_passed.strip()}'
-    """
 
-    cursor.execute(edit)
+    cursor.execute("UPDATE movies SET name = (?) WHERE name = (?)", (post_took.strip(), post_passed.strip()))
     db.commit()
     await state.finish()
 
@@ -196,6 +190,7 @@ async def rus_rullete(message: types.Message):
             await message.answer_sticker(r"{}".format(death))
         if other_var_death == 5:
             await message.answer_sticker(r"{}".format(death))
+            
 #classic
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
