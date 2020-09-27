@@ -4,9 +4,9 @@ import random
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher import FSMContext
-from my_db.sqliteTry import db, cursor
-from states import MyStates
-from config import token
+from configuration.sqliteTry import db, cursor
+from configuration.states import MyStates
+from configuration.settings import token
 
 logging.basicConfig(level=logging.INFO)
 
