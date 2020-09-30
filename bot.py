@@ -125,10 +125,13 @@ async def edit_from(message: types.Message, state: FSMContext):
 async def db_work(message: types.Message):
     all_m = []
     for m in cursor.execute("SELECT * FROM movies"):
+
         all_m.append(m)
 
+    all_m = '\n'.join([', '.join(map(str, m)) for m in all_m])
+    
     await bot.send_message(
-        message.chat.id,"Все произведения, которые ты хотел посмотреть:" + f"\n{all_m}")
+        message.chat.id, "Все произведения, которые ты хотел посмотреть:" + f"\n{all_m}")
 
 #welcome func
 @dp.message_handler(commands=["start", "s", "ы"])
