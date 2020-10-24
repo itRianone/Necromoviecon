@@ -125,18 +125,24 @@ async def edit_from(message: types.Message, state: FSMContext):
 async def db_work(message: types.Message):
     all_m = []
     for m in cursor.execute("SELECT * FROM movies"):
-
         all_m.append(m)
 
     all_m = '\n'.join([', '.join(map(str, m)) for m in all_m])
     
     await bot.send_message(
-        message.chat.id, "Все произведения, которые ты хотел посмотреть:" + f"\n{all_m}")
+        message.chat.id, "Все произведения, которые ты хотел потрогать:" + f"\n<b>{all_m}</b>", parse_mode="html")
+
+#watch all in db func
+@dp.message_handler(commands=["id"])
+async def db_work(message: types.Message):
+    await bot.send_message(
+        message.chat.id, f"your id is - <code>{message.chat.id}</code>", parse_mode='HTML')
 
 #welcome func
 @dp.message_handler(commands=["start", "s", "ы"])
 async def send_welcome(message: types.Message):
-    await message.reply("Hi, {}!\nI'm Necromoviecon!\nТвой личный дневник, бот, раб, кролик, стул, стол и все, что тебе нужно."
+    await message.reply(
+        "Hi, {}!\nI'm Necromoviecon!\nТвой личный дневник, бот, раб, кролик, стул, стол и все, что тебе нужно."
         " Умею добавлять/изменять/удалять инфу о заинтересовавших тебя(меня) произведениях в бд."
         " Напиши команду /help,"
         " чтобы я показал тебе все мои команды и что они делают".format(
@@ -156,16 +162,16 @@ async def send_welcome(message: types.Message):
         "\n/add, /remove, /edit"
         "\nРабота добавления использует FSM, если ты отправишь (/) во время вопросов, то FSM остановится"
         "\nА еще можешь чекнуть всю базу - /all"
-        "\nИ сыграть в рулеточку) - /rullete, /рулетка".format(message.from_user.first_name))
+        "\nИ сыграть в рулеточку) - /roulette, /рулетка".format(message.from_user.first_name))
 
 #for sticks 
 @dp.message_handler(content_types=types.ContentType.STICKER)
 async def stick_id(message: types.Message):
     #Включай если надо узнать id стикера, фото и тд
-    await message.reply("{}".format(message.sticker.file_id))
+    await message.reply(f"id этого стикера: \n<code>{message.sticker.file_id}</code>", parse_mode="html")
 
-#russian rullete(why not?)
-def rullete(random):
+#russian roulette(why not?)
+def roulette(random):
     global god_change
     god_change = random.randint(1, 2)
     global other_var_life
@@ -174,10 +180,10 @@ def rullete(random):
     other_var_death = random.randint(4, 5)
 
 # ↑
-@dp.message_handler(commands=["rullete","рулетка"])
-async def rus_rullete(message: types.Message):
-    #russian rullete(why not?)
-    rullete(random)
+@dp.message_handler(commands=["roulette", "рулетка"])
+async def rus_roulette(message: types.Message):
+    #russian roulette(why not?)
+    roulette(random)
 
     if god_change == 1:
         await bot.send_message(message.chat.id, f"{message.from_user.first_name}, ты выжил, гц")
